@@ -5,6 +5,7 @@ import xarray as xr
 from scipy.special import gammaincc, gamma
 
 from config import *
+from data import Data
 import utils
 import core
 
@@ -87,7 +88,7 @@ class Model():
         self.dt = int(cfl / np.sqrt((u_max/self.dx)**2 + (u_max/self.dy)**2))
 
         output_dt = utils.parse_time(output_dt)
-        self.output_dt = max(int(output_dt / self.dt), 1)
+        self.output_nt = max(int(output_dt / self.dt), 1)
 
         # Coordinates
         self.x_list = np.linspace(-self.r_max, self.r_max + self.dx, self.nx + 1)
@@ -108,7 +109,10 @@ class Model():
         self.sponge = np.maximum((utils.co(self.lat_min) - np.maximum(self.colat, utils.co(self.lat_sponge)))
                                  / (utils.co(self.lat_min) - utils.co(self.lat_sponge)), 0)
         
-        utils.log(f'Timestep: dt = {self.dt} s')
+        # Storage
+        self.data = Data(self.x_list, self.y_list, self.output_nt * self.dt)
+        
+        utils.log(f'Configuration successfully created. Timestep: dt = {self.dt} s')
 
     def initialize(self, vort_lat, vort_number):
         """Set initial conditions.
@@ -128,7 +132,7 @@ class Model():
                 )
 
         # Initialize dataset (for storing the evolution of the system)
-        self.make_dataset()
+        self.data.store_state(0, self.u, self.v, self.h)
 
     def step(self):
         """Run one step of the simulation"""
@@ -139,8 +143,8 @@ class Model():
         self.u = u * self.sponge[:-1, :]
         self.v = v * self.sponge[:, :-1]
         self.timestep += 1
-        if self.timestep % self.output_dt == 0:
-            self.store_state()
+        if self.timestep % self.output_nt == 0:
+            self.data.store_state(self.timestep * self.dt, self.u, self.v, self.h)
 
     def run(self, time):
         """Run simulation for given time.
@@ -152,46 +156,6 @@ class Model():
             self.step()
         utils.log(f'Successfully ran the simulation for {self.timestep - step_init} timesteps ({utils.sec_to_str(time)}).')
 
-    def make_dataset(self):
-        """Create dataset of u, v, h"""
-        u = xr.DataArray(self.u[None, :, :], dims=('time', 'y', 'x'))
-        v = xr.DataArray(self.v[None, :, :], dims=('time', 'y', 'x'))
-        h = xr.DataArray(self.h[None, :, :], dims=('time', 'y', 'x'))
-        self.u_data = u.assign_coords(x=self.x_list, y=self.y_list[:-1], time=[0])
-        self.v_data = v.assign_coords(x=self.x_list[:-1], y=self.y_list, time=[0])
-        self.h_data = h.assign_coords(x=self.x_list[:-1], y=self.y_list[:-1], time=[0])
-
-    def extend_dataset(self, n=100):
-        """Extend dataset allocation (double the size or add n if size < n).
-        This allows to indefinitely extend storage and thus simulation time while keeping a negligible
-        amount of array extensions (which is costly due to reallocation)."""
-        t_max = self.u_data.time.max()
-        n = max(n, self.u_data.time.size)
-        t_list = np.arange(t_max + self.output_dt*self.dt, t_max + (n+1)*self.output_dt*self.dt, self.output_dt*self.dt)
-        new_u = np.zeros((n, self.ny, self.nx + 1))
-        new_v = np.zeros((n, self.ny + 1, self.nx))
-        new_h = np.zeros((n, self.ny, self.nx))
-        new_u = xr.DataArray(new_u, dims=('time', 'y', 'x')).assign_coords(x=self.x_list, y=self.y_list[:-1], time=t_list)
-        new_v = xr.DataArray(new_v, dims=('time', 'y', 'x')).assign_coords(x=self.x_list[:-1], y=self.y_list, time=t_list)
-        new_h = xr.DataArray(new_h, dims=('time', 'y', 'x')).assign_coords(x=self.x_list[:-1], y=self.y_list[:-1], time=t_list)
-        self.u_data = xr.concat([self.u_data, new_u], dim='time')
-        self.v_data = xr.concat([self.v_data, new_v], dim='time')
-        self.h_data = xr.concat([self.h_data, new_h], dim='time')
-        utils.log(f'Dataset extension by {n}')
-    
-    def store_state(self):
-        """Store current state of simulation"""
-        try:
-            d = dict(time=self.timestep * self.dt)
-            self.u_data.loc[d] = self.u
-            self.v_data.loc[d] = self.v
-            self.h_data.loc[d] = self.h
-        except KeyError:
-            self.extend_dataset()
-            self.store_state()
-
     def save_nc(self, filename=None):
         """Save output as NETCDF file."""
-        ds = xr.Dataset({'u': self.u_data, 'v': self.v_data, 'h': self.h_data})
-        ds = ds.sel(time=ds.time <= self.timestep * self.dt)
-        ds.to_netcdf(f'{filename if filename is not None else "output"}.nc')
+        self.data.save_nc(filename=filename)
