@@ -26,6 +26,7 @@ def log(text):
         return
     print(f'[{datetime.now().strftime(r"%H:%M:%S")}] {text}')
 
+
 def warn(text):
     log('WARNING | ' + text)
 
@@ -55,3 +56,9 @@ def sec_to_str(val):
     """Return duration in seconds as a string."""
     duration = timedelta(seconds=val)
     return str(duration)
+
+
+def generate_output_name(text='output'):
+    """Generate output name based on current time."""
+    time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return f'{text}_{time}'

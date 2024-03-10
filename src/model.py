@@ -156,6 +156,6 @@ class Model():
             self.step()
         utils.log(f'Successfully ran the simulation for {self.timestep - step_init} timesteps ({utils.sec_to_str(time)}).')
 
-    def save_nc(self, filename=None):
+    def save_nc(self, filename=''):
         """Save output as NETCDF file."""
         self.data.save_nc(filename=filename)

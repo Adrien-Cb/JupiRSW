@@ -47,7 +47,8 @@ def show_var(model, var, cmap=DEFAULT_CMAP, title=None, show_lat=False):
     return fig
 
 
-def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, polar_grid=False, save_as=None, filename='', save_dpi=200):
+def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, polar_grid=False, 
+                  save_as=None, filename='', save_dpi=200, fps=24):
     data = getattr(model.data, var)
     data = data.sel(time=data.time <= model.timestep * model.dt)
     v_max = np.max(data)
@@ -86,6 +87,8 @@ def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, pola
     anim = FuncAnimation(fig, update, frames=n_frames, interval=200)
 
     # Save
+    if filename == '':
+        filename = utils.generate_output_name('anim')
     if save_as in ('mp4', 'MP4'):
         ffwriter = FFMpegWriter()
         try:
@@ -93,7 +96,7 @@ def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, pola
         except (PermissionError, FileNotFoundError):
             utils.warn('Could not save as MP4, check that ffmpeg executable is at the path specified in the configuration file.')
     elif save_as in ('gif', 'GIF'):
-        anim.save(filename.strip('.gif') + '.gif', dpi=save_dpi)
+        anim.save(filename.strip('.gif') + '.gif', dpi=save_dpi, fps=fps)
     elif save_as is not None:
         utils.warn('Invalid save format, it should be \'mp4\' or \'gif\'.')
 

@@ -59,8 +59,10 @@ class Data():
             self.extend_dataset()
             self.store_state(time, u, v, h)
 
-    def save_nc(self, filename=None):
+    def save_nc(self, filename=''):
         """Save output as NETCDF file."""
         ds = xr.Dataset({'u': self.u, 'v': self.v, 'h': self.h})
         ds = ds.sel(time=ds.time <= self.time)
-        ds.to_netcdf(f'{filename if filename is not None else "output"}.nc')
+        if filename == '':
+            filename = utils.generate_output_name('output')
+        ds.to_netcdf(f'{filename}.nc')
