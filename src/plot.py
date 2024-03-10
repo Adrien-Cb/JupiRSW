@@ -2,10 +2,17 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation, FFMpegWriter
 import cmcrameri
+import warnings
 
 import utils
+from config import FFMPEG_PATH
+
+plt.style.use('ggplot')
+
+if FFMPEG_PATH is not None and FFMPEG_PATH != '':
+    plt.rcParams['animation.ffmpeg_path'] = FFMPEG_PATH
 
 DEFAULT_CMAP = cmcrameri.cm.batlow
 
@@ -40,7 +47,7 @@ def show_var(model, var, cmap=DEFAULT_CMAP, title=None, show_lat=False):
     return fig
 
 
-def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, show_lat=False):
+def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, polar_grid=False, save_as=None, filename='', save_dpi=200):
     data = getattr(model.data, var)
     data = data.sel(time=data.time <= model.timestep * model.dt)
     v_max = np.max(data)
@@ -48,14 +55,46 @@ def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, show
     n = data.shape[0]
     if n_frames is None:
         n_frames = n
+
+    # Create plot
+    fig, ax = plt.subplots(1, 1)
+    pcol = ax.pcolormesh(data.x, data.y, data[0], cmap=cmap, vmax=v_max, vmin=v_min)
+    fig.colorbar(pcol, label=var if title is None else title)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+
+    # Add grid
+    if polar_grid:
+        lw = 0.5
+        ls = ':'
+        color = 'black'
+        x_center = (model.x_list[-2] + model.x_list[0]) * .5
+        y_center = (model.y_list[-2] + model.y_list[0]) * .5
+        ax.axvline(x_center, linewidth=lw, linestyle=ls, color=color)
+        ax.axhline(y_center, linewidth=lw, linestyle=ls, color=color)
+        cs = ax.contour(model.x_list[:-1], model.y_list[:-1], utils.co(model.colat[:model.ny, :model.nx]), 
+                        colors=color, linestyles=ls, linewidths=lw, levels=4)
+        ax.clabel(cs, cs.levels, inline=True, fontsize=8)
+        ax.axis('off')
     
+    # Update plot
     def update(frame):
         k = int(frame * n / n_frames)
-        plt.clf()
-        plt.pcolormesh(data.x, data.y, data[k], cmap=cmap, vmax=v_max, vmin=v_min)
-        plt.colorbar(label=var)
-        plt.title(f't = {data.time[k] / 86400 :.0f} d')
-        plt.xlabel('X')
-        plt.ylabel('Y')
+        pcol.set_array(data[k].values.ravel())
+        ax.set_title(f't = {data.time[k] / 86400 :.0f} d')
 
-    return FuncAnimation(plt.gcf(), update, frames=n_frames, interval=200)
+    anim = FuncAnimation(fig, update, frames=n_frames, interval=200)
+
+    # Save
+    if save_as in ('mp4', 'MP4'):
+        ffwriter = FFMpegWriter()
+        try:
+            anim.save(filename.strip('.mp4') + '.mp4', writer=ffwriter, dpi=save_dpi)
+        except (PermissionError, FileNotFoundError):
+            utils.warn('Could not save as MP4, check that ffmpeg executable is at the path specified in the configuration file.')
+    elif save_as in ('gif', 'GIF'):
+        anim.save(filename.strip('.gif') + '.gif', dpi=save_dpi)
+    elif save_as is not None:
+        utils.warn('Invalid save format, it should be \'mp4\' or \'gif\'.')
+
+    return anim

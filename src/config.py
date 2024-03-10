@@ -49,7 +49,10 @@ R_M = 1000e3  # m
 CFL = 1.587 / 2
 
 # Output timestep (in seconds or as a time string)
-OUTPUT_TIMESTEP = '1 day'  # s       Note: it will be rounded to a multiple of dt
+OUTPUT_TIMESTEP = '1 day'  # Note: it will be rounded to a multiple of dt
 
 # Enable/disable logs
 LOG = True
+
+# Path to ffmpeg executable (None or empty string to keep matplotlib default value)
+FFMPEG_PATH = R'C:\ffmpeg\bin\ffmpeg.exe'

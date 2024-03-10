@@ -26,6 +26,9 @@ def log(text):
         return
     print(f'[{datetime.now().strftime(r"%H:%M:%S")}] {text}')
 
+def warn(text):
+    log('WARNING | ' + text)
+
 
 def parse_time(val):
     """Parse `val` into a duration in seconds.
