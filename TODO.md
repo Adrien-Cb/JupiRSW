@@ -6,3 +6,5 @@
 - [ ] Give possibility to add longitude to initial vortices
 - [x] Generate default name for output
 - [ ] Plot output in real time
+- [ ] Progress bar
+- [ ] Add metadata to netCDF
