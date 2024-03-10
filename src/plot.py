@@ -41,7 +41,7 @@ def show_var(model, var, cmap=DEFAULT_CMAP, title=None, show_lat=False):
 
 
 def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, show_lat=False):
-    data = getattr(model, var + '_data')
+    data = getattr(model.data, var)
     data = data.sel(time=data.time <= model.timestep * model.dt)
     v_max = np.max(data)
     v_min = np.min(data)
