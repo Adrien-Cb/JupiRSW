@@ -9,6 +9,20 @@ from data import Data
 import utils
 import core
 
+DEFAULT_PARAMS = {
+    'lat_min': LAT_MIN,
+    'lat_sponge': LAT_SPONGE,
+    'r_planet': R,
+    't_planet': T,
+    'g': G,
+    'ro': RO,
+    'bu': BU,
+    'b': B,
+    'r_m': R_M,
+    'cfl': CFL,
+    'output_dt': OUTPUT_TIMESTEP
+}
+
 
 def h_vort(r, h_0, r_m, ro, bu, b):
     """Return a vortex h at a distance r from the center"""
@@ -79,6 +93,10 @@ class Model():
         self.b = b
         self.r_m = r_m
         self.g = g
+        self.r_planet = r_planet
+        self.t_planet = t_planet
+        self.cfl = cfl
+        self.output_dt = output_dt
 
         self.f_0 = 4*np.pi/t_planet
         self.v_m = self.ro * self.f_0 * self.r_m
@@ -111,6 +129,19 @@ class Model():
         
         # Storage
         self.data = Data(self.x_list, self.y_list, self.output_nt * self.dt)
+        self.attrs = {
+            'lat_min': self.lat_min,
+            'lat_sponge': self.lat_sponge,
+            'r_planet': self.r_planet,
+            't_planet': self.t_planet,
+            'g': self.g,
+            'ro': self.ro,
+            'bu': self.bu,
+            'b': self.b,
+            'r_m': self.r_m,
+            'cfl': self.cfl,
+            'output_dt': self.output_dt
+        }
         
         utils.log(f'Configuration successfully created. Timestep: dt = {self.dt} s')
 
@@ -158,4 +189,27 @@ class Model():
 
     def save_nc(self, filename=''):
         """Save output as NETCDF file."""
-        self.data.save_nc(filename=filename)
+        self.data.save_nc(filename=filename, attrs=self.attrs)
+
+    def to_dataset(self):
+        return self.data.to_dataset(attrs=self.attrs)
+
+
+def open_dataset(path, **params):
+    """Create model instance from dataset. 
+    Optional parameters can be specified to override those of the dataset."""
+    ds = xr.open_dataset(path)
+    nx = ds.x.size - 1
+    ny = ds.y.size - 1
+    params = DEFAULT_PARAMS | ds.attrs | params
+    m = Model(nx, ny, **params)
+    m.data.h = ds.h[:, :-1, :-1]
+    m.data.u = ds.u[:, :-1, :]
+    m.data.v = ds.v[:, :, :-1]
+    m.data.time = ds.time.max()
+
+    m.timestep = int(ds.time.max() / m.dt)
+    m.h = m.data.h.sel(time=m.data.time).values
+    m.u = m.data.u.sel(time=m.data.time).values
+    m.v = m.data.v.sel(time=m.data.time).values
+    return m

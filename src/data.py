@@ -59,10 +59,41 @@ class Data():
             self.extend_dataset()
             self.store_state(time, u, v, h)
 
-    def save_nc(self, filename=''):
+    def save_nc(self, attrs={}, filename=''):
         """Save output as NETCDF file."""
-        ds = xr.Dataset({'u': self.u, 'v': self.v, 'h': self.h})
-        ds = ds.sel(time=ds.time <= self.time)
+        ds = self.to_dataset(attrs=attrs)
         if filename == '':
             filename = utils.generate_output_name('output')
-        ds.to_netcdf(f'{filename}.nc')
+        ds.to_netcdf(f'{filename.strip(".nc")}.nc')
+
+    def to_dataset(self, attrs):
+        ds = xr.Dataset({'u': self.u, 'v': self.v, 'h': self.h})
+        u_attrs = {
+            'unit': 'm/s',
+            'long_name': 'Eastward velocity component'
+        }
+        v_attrs = {
+            'unit': 'm/s',
+            'long_name': 'Northward velocity component'
+        }
+        h_attrs = {
+            'unit': 'm',
+            'long_name': 'Depth anomaly'
+        }
+        x_attrs = {
+            'unit': 'm',
+            'long_name': 'X coordinate'
+        }
+        y_attrs = {
+            'unit': 'm',
+            'long_name': 'Y coordinate'
+        }
+        t_attrs = {
+            'unit': 's',
+            'long_name': 'Time coordinate'
+        }
+        for var, var_attrs in (('u', u_attrs), ('v', v_attrs), ('h', h_attrs), 
+                               ('y', y_attrs), ('x', x_attrs), ('time', t_attrs)):
+            ds[var].attrs |= var_attrs
+        ds.attrs |= attrs
+        return ds.sel(time=ds.time <= self.time)
