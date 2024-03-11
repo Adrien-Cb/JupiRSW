@@ -3,7 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, FFMpegWriter
-import cmcrameri
 import warnings
 
 import utils
@@ -14,7 +13,11 @@ plt.style.use('ggplot')
 if FFMPEG_PATH is not None and FFMPEG_PATH != '':
     plt.rcParams['animation.ffmpeg_path'] = FFMPEG_PATH
 
-DEFAULT_CMAP = cmcrameri.cm.batlow
+try:
+    import cmcrameri
+    DEFAULT_CMAP = cmcrameri.cm.batlow
+except ModuleNotFoundError:
+    DEFAULT_CMAP = plt.get_cmap('viridis')
 
 units = {
     'u': '[$m.s^{-1}$]',

@@ -8,11 +8,26 @@ https://github.com/Adrien-Cb/JupiRSW/assets/130017358/4483151a-a1b7-42d5-8c36-23
 
 *Work in progress*
 
+## Functionalities
+
+- Save/load results as NetCDF.
+- Plot animations, save them as MP4 or GIF.
+- Set initial vortex latitudes and number.
+
+```python
+m = Model(150)
+m.initialize(vort_lat=[90, 80, 70], vort_number=[1, 5, 1])
+m.run('1y')
+
+plot.show_var_anim(m, 'pv', title='Potential vorticity', save_as='mp4', filename='anim')
+```
+
+
 ## Install
 
 ### Libraries 
 
-JupiRSW uses **NumPy**, **Xarray**, **SciPy** and **Matplotlib**.
+JupiRSW uses **NumPy**, **Xarray**, **SciPy** and **Matplotlib**. 
 
 ### ffmpeg
 
@@ -22,10 +37,17 @@ Once installed, add the path to the ffmpeg executable in `config.py`:
 ```python
 FFMPEG_PATH = R'C:\ffmpeg\bin\ffmpeg.exe'
 ```
+Animations can still be saved as GIFs without ffmpeg.
+
+### Optional install
+
+I recommend using the [**cmcrameri**](https://pypi.org/project/cmcrameri/) module for pretty, perceptually uniform, colorblind-friendly colormaps. 
+This install is optional.
+
 
 ## References and credits
 
-The RK3 scheme implementation is taken from [PyRSW](https://github.com/pvthinker/pyRSW)
+The RK3 scheme implementation is taken from [PyRSW](https://github.com/pvthinker/pyRSW).
 
 The configuration of JupiRSW is based on:
 
