@@ -3,7 +3,10 @@
 This is a rotating shallow water model for studying vortices at a planet's pole.
 
 
-https://github.com/Adrien-Cb/JupiRSW/assets/130017358/4483151a-a1b7-42d5-8c36-23c77cf84599
+
+
+https://github.com/Adrien-Cb/JupiRSW/assets/130017358/60b82aa1-e99a-4bf2-a4de-1a9c1629c67a
+
 
 
 *Work in progress*
@@ -14,12 +17,13 @@ https://github.com/Adrien-Cb/JupiRSW/assets/130017358/4483151a-a1b7-42d5-8c36-23
 - Plot animations, save them as MP4 or GIF.
 - Set initial vortex latitudes and number.
 
+This is for example the code used to generate the demo video:
 ```python
-m = Model(150)
-m.initialize(vort_lat=[90, 80, 70], vort_number=[1, 5, 1])
-m.run('1y')
+m = Model(300)
+m.initialize(vort_lat=[83, 70], vort_number=[5, 1])
+m.run('3 months')
 
-plot.show_var_anim(m, 'pv', title='Potential vorticity', save_as='mp4', filename='anim')
+plot.show_var_anim(m, 'pv', title='PV', save_as='mp4', filename='demo')
 ```
 
 
