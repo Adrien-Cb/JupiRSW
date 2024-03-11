@@ -4,6 +4,7 @@ import xarray as xr
 import numpy as np
 
 import utils
+import core
 
 
 
@@ -97,3 +98,12 @@ class Data():
             ds[var].attrs |= var_attrs
         ds.attrs |= attrs
         return ds.sel(time=ds.time <= self.time)
+    
+    def compute_pv(self, h_0, f):
+        """Compute potential vorticity"""
+        utils.log('Computing potential vorticity...')
+        dx, dy = self.x_list[1] - self.x_list[0], self.y_list[1] - self.y_list[0]
+        pv = np.array([core.pv(u.values, v.values, h.values + h_0, f, dx, dy) for (u, h, v) in zip(self.u, self.h, self.v)])
+        pv = xr.DataArray(pv, dims=('time', 'y', 'x')).assign_coords(x=self.x_list[:-1], y=self.y_list[:-1], time=self.h.time)
+        self.pv = pv
+        return pv

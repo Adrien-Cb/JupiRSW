@@ -74,3 +74,8 @@ def rk3(h, u, v, dt, f, g, h_0, dx, dy):
     ]
     return state
 
+
+def pv(u, v, h_tot, f, dx, dy):
+    """Compute potential vorticity.
+    Here h_tot is the total thickness of the layer, i.e. h + h_0."""
+    return (curl(u, v, dx, dy) + f)[:-1, :-1] / h_tot

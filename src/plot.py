@@ -47,9 +47,15 @@ def show_var(model, var, cmap=DEFAULT_CMAP, title=None, show_lat=False):
     return fig
 
 
-def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, polar_grid=False, 
+def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, polar_grid=True, 
                   save_as=None, filename='', save_dpi=200, fps=24):
-    data = getattr(model.data, var)
+    if var == 'pv':
+        try:
+            data = getattr(model.data, var)
+        except AttributeError:
+            data = model.data.compute_pv(model.h_0, model.f)
+    else:
+        data = getattr(model.data, var)
     data = data.sel(time=data.time <= model.timestep * model.dt)
     v_max = np.max(data)
     v_min = np.min(data)
