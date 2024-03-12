@@ -9,9 +9,9 @@ https://github.com/Adrien-Cb/JupiRSW/assets/130017358/60b82aa1-e99a-4bf2-a4de-1a
 
 
 
-*Work in progress*
+🚧 *Work in progress* 🚧
 
-## Functionalities
+## 🔎 Functionalities
 
 - Save/load results as NetCDF.
 - Plot animations, save them as MP4 or GIF.
@@ -27,7 +27,7 @@ plot.show_var_anim(m, 'pv', title='PV', save_as='mp4', filename='demo')
 ```
 
 
-## Install
+## 🛠 Install
 
 ### Libraries 
 
@@ -49,7 +49,7 @@ I recommend using the [**cmcrameri**](https://pypi.org/project/cmcrameri/) modul
 This install is optional.
 
 
-## References and credits
+## 📚 References and credits
 
 The RK3 scheme implementation is taken from [PyRSW](https://github.com/pvthinker/pyRSW).
 
