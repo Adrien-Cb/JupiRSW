@@ -1,12 +1,7 @@
 # TO DO
 
-- [x] Plot PV
-- [x] Load simulation from NETCDF
-- [x] Save as MP4 using ffmpeg
-- [ ] Give possibility to add longitude to initial vortices
-- [x] Generate default name for output
+- [ ] Give possibility to add initial vortices from their coordinates (not only latitude and number)
 - [ ] Plot output in real time
 - [ ] Progress bar
-- [x] Add metadata to netCDF
 - [ ] Add more logs
-- [ ] Add cmcrameri support
+- [ ] Save outputs in `output` folder
