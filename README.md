@@ -19,6 +19,9 @@ https://github.com/Adrien-Cb/JupiRSW/assets/130017358/60b82aa1-e99a-4bf2-a4de-1a
 
 This is for example the code used to generate the demo video:
 ```python
+from model import Model
+import plot
+
 m = Model(300)
 m.initialize(vort_lat=[83, 70], vort_number=[5, 1])
 m.run('3 months')
