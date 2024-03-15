@@ -9,7 +9,7 @@ Simply open `run.ipynb` to get started!
 https://github.com/Adrien-Cb/JupiRSW/assets/130017358/60b82aa1-e99a-4bf2-a4de-1a9c1629c67a
 
 
-
+*This project is part of a finished school project and is unlikely to evolve further. However if you are interested in using it feel free to suggest any improvement, I'll be happy to work on it again.*
 
 
 ## 🔎 Functionalities
