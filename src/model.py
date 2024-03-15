@@ -160,14 +160,17 @@ class Model():
         
         utils.log(f'Configuration successfully created. Timestep: dt = {self.dt} s')
 
-    def initialize(self, vort_lat, vort_number, vort_coords):
+    def initialize(self, vort_lat=None, vort_number=None, vort_coords=None):
         """Set initial conditions.
         `vort_lat` and `vort_number` are either two scalars or two iterables of same length.
         """
 
         # Get list of vortex centers
-        centers = make_vort_centers(vort_lat, vort_number, self.r_max, self.lat_min)
-        centers += make_vort_centers_from_coords(vort_coords, self.r_max, self.lat_min)
+        centers = []
+        if vort_lat is not None:
+            centers += make_vort_centers(vort_lat, vort_number, self.r_max, self.lat_min)
+        if vort_coords is not None:
+            centers += make_vort_centers_from_coords(vort_coords, self.r_max, self.lat_min)
 
         # Initialize u, v and h
         for i in range(self.nx):
