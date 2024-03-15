@@ -71,6 +71,21 @@ def make_vort_centers(vort_lat, vort_number, r_max, lat_min):
     return centers
 
 
+def make_vort_centers_from_coords(vort_coords, r_max, lat_min):
+    """"Return vortex centers from their latitude and longitude.
+    `vort_coords` is either a pair of coordinates or an iterable of pairs."""
+    try:
+        vort_coords[0][0]
+    except TypeError:
+        vort_coords = [vort_coords]
+    centers = []
+    for lat, lon in vort_coords:
+        r_ = utils.co(lat) / utils.co(lat_min) * r_max
+        centers.append((r_ * np.cos(lon * np.pi / 180), r_ * np.sin(lon * np.pi / 180)))
+    return centers
+    
+
+
 class Model():
     """Rotating shallow water model"""
     def __init__(self, nx, ny=None, 
@@ -145,13 +160,14 @@ class Model():
         
         utils.log(f'Configuration successfully created. Timestep: dt = {self.dt} s')
 
-    def initialize(self, vort_lat, vort_number):
+    def initialize(self, vort_lat, vort_number, vort_coords):
         """Set initial conditions.
         `vort_lat` and `vort_number` are either two scalars or two iterables of same length.
         """
 
         # Get list of vortex centers
         centers = make_vort_centers(vort_lat, vort_number, self.r_max, self.lat_min)
+        centers += make_vort_centers_from_coords(vort_coords, self.r_max, self.lat_min)
 
         # Initialize u, v and h
         for i in range(self.nx):
