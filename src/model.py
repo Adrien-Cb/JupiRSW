@@ -189,9 +189,9 @@ class Model():
             self.step()
         utils.log(f'Successfully ran the simulation for {self.timestep - step_init} timesteps ({utils.sec_to_str(time)}).')
 
-    def save_nc(self, filename='', save_pv=True):
+    def save_nc(self, filename='', folder=OUTPUT_FOLDER, save_pv=True):
         """Save output as NETCDF file."""
-        self.data.save_nc(filename=filename, attrs=self.attrs, save_pv=True)
+        self.data.save_nc(filename=filename, folder=folder, attrs=self.attrs, save_pv=True)
 
     def to_dataset(self):
         return self.data.to_dataset(attrs=self.attrs)

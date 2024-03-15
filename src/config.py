@@ -56,3 +56,6 @@ LOG = True
 
 # Path to ffmpeg executable (None or empty string to keep matplotlib default value)
 FFMPEG_PATH = R'C:\ffmpeg\bin\ffmpeg.exe'
+
+# Output folder
+OUTPUT_FOLDER = R'.\output'

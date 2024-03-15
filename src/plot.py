@@ -6,7 +6,7 @@ from matplotlib.animation import FuncAnimation, FFMpegWriter
 import warnings
 
 import utils
-from config import FFMPEG_PATH
+from config import FFMPEG_PATH, OUTPUT_FOLDER
 
 plt.style.use('ggplot')
 
@@ -51,7 +51,7 @@ def show_var(model, var, cmap=DEFAULT_CMAP, title=None, show_lat=False):
 
 
 def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, polar_grid=True, 
-                  save_as=None, filename='', save_dpi=200, fps=24):
+                  save_as=None, filename='', folder=OUTPUT_FOLDER, save_dpi=200, fps=24):
     data = getattr(model.data, var)
     data = data.sel(time=data.time <= model.timestep * model.dt)
     v_max = np.max(data)
@@ -95,11 +95,13 @@ def show_var_anim(model, var, n_frames=None, cmap=DEFAULT_CMAP, title=None, pola
     if save_as in ('mp4', 'MP4'):
         ffwriter = FFMpegWriter()
         try:
-            anim.save(filename.removesuffix('.mp4') + '.mp4', writer=ffwriter, dpi=save_dpi)
+            folder = utils.check_path(folder)
+            anim.save(folder / (filename.removesuffix('.mp4')+'.mp4'), writer=ffwriter, dpi=save_dpi)
         except (PermissionError, FileNotFoundError):
             utils.warn('Could not save as MP4, check that ffmpeg executable is at the path specified in the configuration file.')
     elif save_as in ('gif', 'GIF'):
-        anim.save(filename.removesuffix('.gif') + '.gif', dpi=save_dpi, fps=fps)
+        folder = utils.check_path(folder)
+        anim.save(folder / (filename.removesuffix('.gif')+'.gif'), dpi=save_dpi, fps=fps)
     elif save_as is not None:
         utils.warn('Invalid save format, it should be \'mp4\' or \'gif\'.')
 

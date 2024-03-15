@@ -3,6 +3,7 @@
 import numpy as np
 from datetime import datetime, timedelta
 import re
+from pathlib import Path
 
 from config import LOG
 
@@ -62,3 +63,9 @@ def generate_output_name(text='output'):
     """Generate output name based on current time."""
     time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     return f'{text}_{time}'
+
+
+def check_path(path):
+    """Check path and create missing folders if incorrect. Return path object."""
+    Path(path).mkdir(parents=True, exist_ok=True)
+    return Path(path)

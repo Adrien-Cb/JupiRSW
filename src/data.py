@@ -5,6 +5,7 @@ import numpy as np
 
 import utils
 import core
+from config import OUTPUT_FOLDER
 
 
 
@@ -64,12 +65,13 @@ class Data():
             self.extend_dataset()
             self.store_state(time, u, v, h, pv)
 
-    def save_nc(self, attrs={}, filename='', save_pv=True):
+    def save_nc(self, attrs={}, filename='', folder=OUTPUT_FOLDER, save_pv=True):
         """Save output as NETCDF file."""
         ds = self.to_dataset(attrs=attrs, save_pv=save_pv)
         if filename == '':
             filename = utils.generate_output_name('output')
-        ds.to_netcdf(f'{filename.removesuffix(".nc")}.nc')
+        folder = utils.check_path(folder)
+        ds.to_netcdf(folder / f'{filename.removesuffix(".nc")}.nc')
 
     def to_dataset(self, attrs, save_pv=True):
         ds = xr.Dataset({'u': self.u, 'v': self.v, 'h': self.h})
