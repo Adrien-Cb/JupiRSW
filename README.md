@@ -1,6 +1,7 @@
 # JupiRSW
 
 This is a rotating shallow water model for studying vortices at a planet's pole.
+Simply open `run.ipynb` to get started!
 
 
 
@@ -9,13 +10,13 @@ https://github.com/Adrien-Cb/JupiRSW/assets/130017358/60b82aa1-e99a-4bf2-a4de-1a
 
 
 
-🚧 *Work in progress* 🚧
+
 
 ## 🔎 Functionalities
 
 - Save/load results as NetCDF.
 - Plot animations, save them as MP4 or GIF.
-- Set initial vortex latitudes and number.
+- Set initial vortices by latitudes and number (e.g. 1 vortex at 90°N and 5 vortices at 83°N) or by coordinates (e.g. one vortex at 83°N, 45°E).
 
 This is for example the code used to generate the demo video:
 ```python
