@@ -163,7 +163,8 @@ class Model():
                 )
 
         # Initialize dataset (for storing the evolution of the system)
-        self.data.store_state(0, self.u, self.v, self.h)
+        self.data.store_state(0, self.u, self.v, self.h, 
+                              core.pv(self.u, self.v, self.h + self.h_0, self.f, self.dx, self.dy))
 
     def step(self):
         """Run one step of the simulation"""
@@ -175,7 +176,8 @@ class Model():
         self.v = v * self.sponge[:, :-1]
         self.timestep += 1
         if self.timestep % self.output_nt == 0:
-            self.data.store_state(self.timestep * self.dt, self.u, self.v, self.h)
+            self.data.store_state(self.timestep * self.dt, self.u, self.v, self.h,
+                                  core.pv(self.u, self.v, self.h + self.h_0, self.f, self.dx, self.dy))
 
     def run(self, time):
         """Run simulation for given time.
@@ -187,9 +189,9 @@ class Model():
             self.step()
         utils.log(f'Successfully ran the simulation for {self.timestep - step_init} timesteps ({utils.sec_to_str(time)}).')
 
-    def save_nc(self, filename=''):
+    def save_nc(self, filename='', save_pv=True):
         """Save output as NETCDF file."""
-        self.data.save_nc(filename=filename, attrs=self.attrs)
+        self.data.save_nc(filename=filename, attrs=self.attrs, save_pv=True)
 
     def to_dataset(self):
         return self.data.to_dataset(attrs=self.attrs)
@@ -207,6 +209,11 @@ def open_dataset(path, **params):
     m.data.u = ds.u[:, :-1, :]
     m.data.v = ds.v[:, :, :-1]
     m.data.time = ds.time.max()
+
+    if 'pv' in ds.variables:
+        m.data.pv = ds.pv[:, :-1, :-1]
+    else:
+        m.data.compute_pv(m.h_0, m.f)
 
     m.timestep = int(ds.time.max() / m.dt)
     m.h = m.data.h.sel(time=m.data.time).values

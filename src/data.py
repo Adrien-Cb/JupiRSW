@@ -29,6 +29,7 @@ class Data():
         self.u = u.assign_coords(x=self.x_list, y=self.y_list[:-1], time=[0])
         self.v = v.assign_coords(x=self.x_list[:-1], y=self.y_list, time=[0])
         self.h = h.assign_coords(x=self.x_list[:-1], y=self.y_list[:-1], time=[0])
+        self.pv = self.h.copy()
 
     def extend_dataset(self, n=100):
         """Extend dataset allocation (double the size or add n if size < n).
@@ -46,28 +47,31 @@ class Data():
         self.u = xr.concat([self.u, new_u], dim='time')
         self.v = xr.concat([self.v, new_v], dim='time')
         self.h = xr.concat([self.h, new_h], dim='time')
+        self.pv = xr.concat([self.pv, new_h.copy()], dim='time')
         utils.log(f'Dataset extension by {n} (total size of {self.u.time.size} timesteps).')
     
-    def store_state(self, time, u, v, h):
+    def store_state(self, time, u, v, h, pv=None):
         """Store current state of simulation"""
         try:
             d = dict(time=time)
             self.u.loc[d] = u
             self.v.loc[d] = v
             self.h.loc[d] = h
+            if pv is not None:
+                self.pv.loc[d] = pv
             self.time = max(self.time, time)
         except KeyError:
             self.extend_dataset()
-            self.store_state(time, u, v, h)
+            self.store_state(time, u, v, h, pv)
 
-    def save_nc(self, attrs={}, filename=''):
+    def save_nc(self, attrs={}, filename='', save_pv=True):
         """Save output as NETCDF file."""
-        ds = self.to_dataset(attrs=attrs)
+        ds = self.to_dataset(attrs=attrs, save_pv=save_pv)
         if filename == '':
             filename = utils.generate_output_name('output')
-        ds.to_netcdf(f'{filename.strip(".nc")}.nc')
+        ds.to_netcdf(f'{filename.removesuffix(".nc")}.nc')
 
-    def to_dataset(self, attrs):
+    def to_dataset(self, attrs, save_pv=True):
         ds = xr.Dataset({'u': self.u, 'v': self.v, 'h': self.h})
         u_attrs = {
             'unit': 'm/s',
@@ -80,6 +84,10 @@ class Data():
         h_attrs = {
             'unit': 'm',
             'long_name': 'Depth anomaly'
+        }
+        pv_attrs = {
+            'unit': 'm-1.s-1',
+            'long_name': 'Shallow water potential vorticity'
         }
         x_attrs = {
             'unit': 'm',
@@ -96,6 +104,9 @@ class Data():
         for var, var_attrs in (('u', u_attrs), ('v', v_attrs), ('h', h_attrs), 
                                ('y', y_attrs), ('x', x_attrs), ('time', t_attrs)):
             ds[var].attrs |= var_attrs
+        if save_pv:
+            ds['pv'] = self.pv
+            ds['pv'].attrs |= pv_attrs
         ds.attrs |= attrs
         return ds.sel(time=ds.time <= self.time)
     
